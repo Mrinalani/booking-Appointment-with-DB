@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <form id="form"  action="" onsubmit="savetolocalstorage(event)">
+        <label>Name</label>
+        <input type="text" name="name" id="name">
+
+        <label>Email</label>
+        <input type="email" name="email" id="email">
+
+        <label>Number</label>
+        <input type="number" name="phonenumber" id="phonenumber">
+
+        <input type="submit" value="Submit" id="submit" >
+        <ul id="listofitems"></ul>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+    <script>
+
+function savetolocalstorage(event){
+    event.preventDefault();
+       const name = event.target.name.value;
+       const email = event.target.email.value;
+       const phonenumber = event.target.phonenumber.value;
+
+       console.log(name, email, phonenumber);
+
+       const obj = {
+        name,
+        email,
+        phonenumber
+       }
+     //axios.post("https://crudcrud.com/api/b9f84c1afa674b38b57778489553f49e/bookingappoinment",obj)
+
+axios.post('http://localhost:3000/user/add-user', obj)
+    .then((response) => {
+        console.log(response);
+        showUserOnScreen(response.data.newUserDetail);
+    })
+    .catch((err) => {
+        console.log('Error:', err);
+    });
+
+}
+
+ function showUserOnScreen(obj){
+    const parentNode = document.getElementById('listofitems');
+
+   // console.log("backendid=",obj.id)
+
+    const childHtml = `<li id="${obj.id}">${obj.name} -${obj.email}- ${obj.phonenumber}
+    <button onclick="deleteUser('${obj.id}')">delete</button>
+    <button onclick="editUserDetail('${obj.id}','${obj.name}','${obj.email}','${obj.phonenumber}')">edit</button>
+    </li>`;
+
+    parentNode.innerHTML = parentNode.innerHTML + childHtml
+}
+ 
+function deleteUser(userid){
+    console.log("id=",userid)
+    //axios.delete(`https://crudcrud.com/api/c5d652299d9645c2abd4a151bcacb506/bookingAppoinment/${userid}`)
+    axios.delete(`http://localhost:3000/deleteElement/fromDB/${userid}`)
+    .then((response)=>{
+       // console.log(`${userid}`)
+        removeUserFromScreen(userid)
+    })
+    .catch((err)=>{
+        console.log(err)
+    })
+    console.log('clicking on delete to delete the detail of user fron localstorage and screen')
+
+    removeUserFromScreen(userid)
+}
+
+function removeUserFromScreen(userid){
+const parentNode = document.getElementById('listofitems')
+const childNodeToBeDeleted = document.getElementById(userid)
+if(childNodeToBeDeleted){
+    parentNode.removeChild(childNodeToBeDeleted)
+}
+}
+
+// function editUserDetail(userid,n,e,p){
+   
+//     console.log('edit user details and refill it')
+//     document.getElementById('name').value = n;
+//     document.getElementById('email').value = e;
+//     document.getElementById('phonenumber').value = p;
+//          deleteUser(userid)
+    
+// }
+
+window.addEventListener("DOMContentLoaded",()=>{
+
+// axios.get("https://crudcrud.com/api/c5d652299d9645c2abd4a151bcacb506/bookingAppoinment")
+axios.get("http://localhost:3000/getdata/fromDB")
+.then((response)=>{
+    for(var i=0; i<response.data.retrievedData.length; i++){
+        showUserOnScreen(response.data.retrievedData[i])
+    }
+})
+.catch((err)=>{
+    console.log(err)
+})
+
+})
+    </script>
+</body>
+</html>
