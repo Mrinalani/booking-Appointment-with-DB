@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form onsubmit="savetolocalstorage(event)" id="element">
+        <label>ProductName</label>
+        <input type="text" name="username" id="utag" required/>
+        <label>orderId</label>
+        <input type="number" name="emailId" id="itag" required/>
+        <label>SellingPrice</label>
+        <input type="number" name="sellingprice" id="ptag" required/>
+        <button type="submit">AddProduct</button>
+        <h2>Products</h2>
+        <ul id="listofitems"></ul>
+     </form>
+     <h4 class="total" id="value">Total Value worth of product: 0</h4>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+     <script>
+         let sellingPrices = [];
+
+function savetolocalstorage(event) {
+   event.preventDefault();
+   const ProductName = event.target.username.value;
+   const orderId = event.target.emailId.value;
+   const sellingPrice = parseFloat(event.target.sellingprice.value);
+
+   let obj = {
+      ProductName,
+      orderId,
+      sellingPrice
+   };
+
+   sellingPrices.push(sellingPrice);
+  // axios.post("https://crudcrud.com/api/c6954a219e244ea7af512df37a9cd6c8/appointmentDate", obj)
+     axios.post("http://localhost:3000/add-expense/product",obj)
+            .then((response) => {
+               showuseronscreen(response.data.newUserDetail);
+               calculateTotal();
+            })
+            .catch((err) => {
+               document.body.innerHTML += '<h4>something went wrong</h4>';
+               console.log(err);
+            });
+
+         event.target.reset();
+      }
+      function showuseronscreen(obj) {
+     const parentelement = document.getElementById('listofitems');
+     const children = document.createElement('li');
+     children.textContent = obj.ProductName + "-" + obj.orderId + "-" + obj.sellingPrice;
+
+     const deletebutton = document.createElement('input');
+     deletebutton.type = "button";
+     deletebutton.value = 'delete';
+     deletebutton.onclick = () => {
+        parentelement.removeChild(children);
+        deleteUserFromScreen(obj)
+      
+       };
+
+       const editbutton = document.createElement('input')
+       editbutton.type = "button"
+       editbutton.value = "Edit"
+       editbutton.onclick = ()=>{
+        EditUserFromScreen(obj)
+        parentelement.removeChild(children)
+       }
+       children.appendChild(editbutton)
+     children.appendChild(deletebutton);
+     parentelement.appendChild(children);
+  }
+  function deleteUserFromScreen(appointment){
+  axios.delete(`http://localhost:3000/delete-product/fromDB/${appointment.id}`)
+                  .then((response) => {
+                     const index = sellingPrices.findIndex(price => price === appointment.sellingPrice);
+                     if (index !== -1) {
+                        sellingPrices.splice(index, 1);
+                     }
+                     calculateTotal();
+                  })
+                  .catch((error) => {
+                     console.log(error);
+                  });
+                }
+
+   function EditUserFromScreen(appointment){
+   const productNameInput = document.getElementById('utag');
+   const orderIdInput = document.getElementById('itag');
+   const sellingPriceInput = document.getElementById('ptag');
+   
+   productNameInput.value = appointment.ProductName;
+   orderIdInput.value = appointment.orderId;
+   sellingPriceInput.value = appointment.sellingPrice;
+        deleteUserFromScreen(appointment)
+
+   }
+
+  function calculateTotal() {
+     const total = sellingPrices.reduce((sum, price) => sum + price, 0);
+     const totalElement = document.getElementById('value');
+     totalElement.textContent = 'Total Value worth of product: ' + total.toFixed(2);
+  }
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  axios
+    .get("http://localhost:3000/get-expense/fromDB")
+    .then((response) => {
+      for (var i = 0; i < response.data.RetrivedData.length; i++) {
+        const obj = response.data.RetrivedData[i];
+        sellingPrices.push(obj.sellingPrice);
+        showuseronscreen(obj);
+      }
+      calculateTotal();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+     </script>
+    
+</body>
+</html>

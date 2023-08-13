@@ -18,7 +18,8 @@ app.set('views', 'views');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
-const userRoute = require('./routes/userroute')
+const userRoutes = require('./routes/userroute')
+const expenseRoutes = require('./routes/expenseroute')
 
 // db.execute('SELECT*FROM PRODUCTS')
 // .then((result)=>{
@@ -33,11 +34,8 @@ app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-
-
-
-app.use(userRoute)
+app.use(expenseRoutes)
+app.use(userRoutes)
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 
