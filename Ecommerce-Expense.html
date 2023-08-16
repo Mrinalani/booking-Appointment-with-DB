@@ -35,6 +35,7 @@ function savetolocalstorage(event) {
    };
 
    sellingPrices.push(sellingPrice);
+   console.log(sellingPrice)
   // axios.post("https://crudcrud.com/api/c6954a219e244ea7af512df37a9cd6c8/appointmentDate", obj)
      axios.post("http://localhost:3000/add-expense/product",obj)
             .then((response) => {
