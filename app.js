@@ -9,7 +9,8 @@ const sequelize = require('./util/database')
 
 const Product = require('./models/product');
 const Productuser = require('./models/productuser'); // Corrected filename
-
+const Cart = require('./models/cart');
+const CartItem = require('./models/cart-item');
 
 var cors = require('cors')
 
@@ -23,7 +24,8 @@ app.set('views', 'views');
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const userRoutes = require('./routes/userroute')
-const expenseRoutes = require('./routes/expenseroute')
+const expenseRoutes = require('./routes/expenseroute');
+const User = require('./models/user');
 
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -51,6 +53,10 @@ app.use(errorController.get404);
 
 Product.belongsTo(Productuser,{constraints:true,onDelete:'CASCADE'})
 Productuser.hasMany(Product);
+Productuser.hasOne(Cart);
+Cart.belongsTo(Productuser);
+Cart.belongsToMany(Product, {through:CartItem});
+Product.belongsToMany(Cart, {through:CartItem});
 
 
 sequelize.sync()
@@ -65,6 +71,13 @@ sequelize.sync()
 })
 .then(user =>{                         // getting user with id 1
     //console.log(user)                 // consoling user of id 1
+   // app.listen(3000)
+   return user.createCart();
+})
+.then(cart =>{
+    console.log("$$$$$$$", cart)
+    console.log("$$$$$$$     complete")
+    
     app.listen(3000)
 })
 .catch(err => {
